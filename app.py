@@ -1,3 +1,4 @@
+plt.style.use('ggplot')
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -66,3 +67,21 @@ if calculate and number_input:
     st.pyplot(fig)
 
     st.success("วิเคราะห์เสร็จสมบูรณ์ ✅")
+    mport matplotlib.pyplot as plt
+
+# นับความถี่
+counts = df['เลข'].value_counts().sort_values(ascending=False)
+
+st.subheader("📊 กราฟเรียงจากมากไปน้อย")
+
+fig2, ax2 = plt.subplots()
+counts.plot(kind='bar', ax=ax2)
+ax2.set_xlabel("ตัวเลข")
+ax2.set_ylabel("จำนวนครั้ง")
+st.pyplot(fig2)
+st.subheader("🥧 สัดส่วนการกระจายตัวเลข")
+
+fig3, ax3 = plt.subplots()
+ax3.pie(counts, labels=counts.index, autopct='%1.1f%%')
+ax3.set_title("สัดส่วนตัวเลขทั้งหมด")
+st.pyplot(fig3)

@@ -1,14 +1,68 @@
 import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
 
-st.title("🔥 RDH Engine")
+# ---------- PAGE CONFIG ----------
+st.set_page_config(
+    page_title="RDH Engine",
+    page_icon="🔥",
+    layout="wide"
+)
 
-def extract_digits(number):
-    digits = list(str(number))
-    top3 = sorted(set(digits), key=digits.count, reverse=True)[:3]
-    return top3
+# ---------- HEADER ----------
+st.title("🔥 RDH Engine Pro")
+st.markdown("### ระบบวิเคราะห์ตัวเลขอัตโนมัติ")
 
-user_input = st.text_input("ใส่ตัวเลข")
+st.divider()
 
-if user_input:
-    result = extract_digits(user_input)
-    st.write("Digits:", result)
+# ---------- INPUT SECTION ----------
+col1, col2 = st.columns([3,1])
+
+with col1:
+    number_input = st.text_input("ใส่ตัวเลข (เว้นวรรคได้)", placeholder="เช่น 250 137 160 917")
+
+with col2:
+    calculate = st.button("🚀 คำนวณ")
+
+# ---------- PROCESS ----------
+if calculate and number_input:
+
+    clean_number = number_input.replace(" ", "")
+    digits = list(clean_number)
+
+    df = pd.DataFrame({
+        "ตำแหน่ง": range(1, len(digits)+1),
+        "ตัวเลข": digits
+    })
+
+    st.divider()
+    st.subheader("📊 ตารางผลลัพธ์")
+    st.dataframe(df, use_container_width=True)
+
+    # ---------- STATISTICS ----------
+    st.subheader("📈 สถิติ")
+
+    digit_counts = df["ตัวเลข"].value_counts().sort_index()
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric("จำนวนตัวเลขทั้งหมด", len(digits))
+
+    with col2:
+        st.metric("ตัวเลขไม่ซ้ำ", digit_counts.count())
+
+    with col3:
+        most_common = digit_counts.idxmax()
+        st.metric("ตัวที่พบมากสุด", most_common)
+
+    # ---------- CHART ----------
+    st.subheader("📊 กราฟการกระจายตัวเลข")
+
+    fig, ax = plt.subplots()
+    digit_counts.plot(kind='bar', ax=ax)
+    ax.set_xlabel("ตัวเลข")
+    ax.set_ylabel("จำนวนครั้ง")
+    st.pyplot(fig)
+
+    st.success("วิเคราะห์เสร็จสมบูรณ์ ✅")

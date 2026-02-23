@@ -1,7 +1,7 @@
-plt.style.use('ggplot')
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+plt.style.use('ggplot')
 
 # ---------- PAGE CONFIG ----------
 st.set_page_config(
@@ -67,7 +67,7 @@ if calculate and number_input:
     st.pyplot(fig)
 
     st.success("วิเคราะห์เสร็จสมบูรณ์ ✅")
-    mport matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt
 
 # นับความถี่
 counts = df['เลข'].value_counts().sort_values(ascending=False)

@@ -1,0 +1,142 @@
+mport streamlit as st
+from collections import Counter
+
+st.set_page_config(page_title="Hybrid Engine", layout="wide")
+
+# -----------------------------
+# SESSION STORAGE (HIDDEN)
+# -----------------------------
+if "history" not in st.session_state:
+    st.session_state.history = []
+
+history = st.session_state.history
+
+# -----------------------------
+# HEADER
+# -----------------------------
+st.title("🔥 Hybrid Prediction Engine")
+
+# -----------------------------
+# INPUT SECTION
+# -----------------------------
+input_text = st.text_input("กรอกเลข 3 ตัว (เว้นวรรคคั่นแต่ละชุด)")
+
+colA, colB = st.columns(2)
+
+with colA:
+    if st.button("บันทึกข้อมูล"):
+        nums = input_text.split()
+        for n in nums:
+            if len(n) == 3 and n.isdigit():
+                history.append(n)
+        st.success("บันทึกเรียบร้อย")
+
+with colB:
+    if st.button("ล้างข้อมูลทั้งหมด"):
+        st.session_state.history = []
+        st.success("ล้างข้อมูลแล้ว")
+
+# -----------------------------
+# MIN DATA CHECK
+# -----------------------------
+if len(history) < 4:
+    st.info("ต้องมีอย่างน้อย 4 ชุด เพื่อเริ่มคำนวณ")
+    st.stop()
+
+# -----------------------------
+# PREPARE DATA
+# -----------------------------
+digits = []
+for num in history[-6:]:  # window 6 ล่าสุด
+    digits.extend(list(num))
+
+# -----------------------------
+# RDH CALCULATION
+# -----------------------------
+counter = Counter(digits)
+top_rdh = counter.most_common(3)
+
+# -----------------------------
+# SAX-4 CALCULATION
+# -----------------------------
+last4 = history[-4:]
+pair_digits = []
+
+for num in last4:
+    pair_digits.append(num[-2:])
+
+pair_count = Counter(pair_digits)
+top_sax = pair_count.most_common(3)
+
+# -----------------------------
+# HYBRID CALCULATION
+# -----------------------------
+hybrid_scores = {}
+
+for digit, score in counter.items():
+    hybrid_scores[digit] = score
+
+for pair, score in pair_count.items():
+    for d in pair:
+        hybrid_scores[d] = hybrid_scores.get(d, 0) + score
+
+sorted_digits = sorted(hybrid_scores.items(), key=lambda x: x[1], reverse=True)
+top3 = [d[0] for d in sorted_digits[:3]]
+
+# =========================================
+# PRO DASHBOARD DISPLAY (COMPACT)
+# =========================================
+
+st.markdown("""
+<style>
+.big-number {
+    font-size: 42px;
+    font-weight: 700;
+    text-align: center;
+}
+.card {
+    padding: 12px 6px;
+    border-radius: 12px;
+    background-color: #f2f2f2;
+}
+.section-title {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
+
+col1, col2, col3 = st.columns(3)
+
+# RDH
+with col1:
+    st.markdown('<div class="section-title">📊 RDH</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    for digit, score in top_rdh:
+        st.markdown(f'<div class="big-number">{digit}</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# SAX
+with col2:
+    st.markdown('<div class="section-title">⚔️ SAX-4</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    for pair, score in top_sax:
+        st.markdown(f'<div class="big-number">{pair}</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# HYBRID
+with col3:
+    st.markdown('<div class="section-title">🔥 HYBRID</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+
+    if len(top3) >= 2:
+        st.markdown(f'<div class="big-number">{top3[0]}{top3[1]}</div>', unsafe_allow_html=True)
+    if len(top3) >= 3:
+        st.markdown(f'<div class="big-number">{top3[0]}{top3[2]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="big-number">{top3[1]}{top3[2]}</div>', unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
